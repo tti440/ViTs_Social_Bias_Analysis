@@ -122,7 +122,8 @@ In the notebook, you need to manually specify the input points for the SAM2 mode
 - Stored as:  
   **`activation_ratio/activation_ratio{model_name}.csv`**
   Example Beit:
-  | Category       | Face % | Body % | Total  |
+  
+| Category       | Face % | Body % | Total  |
 |----------------|--------|--------|--------|
 | academicgown   | 0.2412 | 0.4503 | 0.6915 |
 | black-male     | 0.3702 | 0.3095 | 0.6797 |
