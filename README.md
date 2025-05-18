@@ -18,7 +18,7 @@ Our pipeline combines:
 - **iEAT (Image Embedding Association Test)** to quantify bias,
 - **Grad-CAM** to visualize attention patterns,
 - **PCA + t-SNE + DBSCAN** to cluster activation weights and highlight structural differences in feature space.
-- **Activation Ratio** to observe the distribution of activation on facial area, body area and a whole human shilouette over entire image using SAM2
+- **Activation Ratio** to observe the distribution of activation on facial area, body area and a whole human shilouette over activations on entire image using SAM2
 ---
 
 ## Repository Structure
