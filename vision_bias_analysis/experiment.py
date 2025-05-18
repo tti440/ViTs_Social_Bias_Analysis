@@ -367,7 +367,7 @@ def dbscan_plot(models, labels):
 	  
 def main():
 	# iEAT results section
-	# ieat_run()
+	ieat_run()
  
 	# # gradCam results section(save act/grad too)
 	models = {
@@ -402,17 +402,17 @@ def main():
 		"desk" : 526,
 		}
 	
-	# gradCam_run(models, labels)
+	gradCam_run(models, labels)
  
-	# # t-SNE results section
-	# #e.g models=["beit","maskfeat","mae", "milan","simmm", "moco","dino","deit","vit","swin"]
-	# get_plot(models)
+	# t-SNE results section
+	#e.g models=["beit","maskfeat","mae", "milan","simmm", "moco","dino","deit","vit","swin"]
+	get_plot(models)
 	
-	# # t_sne activation weights
-	# tsne_activation_weights(models, labels)
+	# t_sne activation weights
+	tsne_activation_weights(models, labels)
 	
-   	# #DBSCAN clustering
-	# dbscan_plot(models, labels)
+   	#DBSCAN clustering
+	dbscan_plot(models, labels)
  
 	#activation ratio
 	get_activation_ratio(models, labels)	

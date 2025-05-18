@@ -49,7 +49,6 @@ setup(
         "matplotlib==3.7.5",
         "mdurl==0.1.2",
         "mkl-service==2.4.0",
-        "mmcv==2.2.0",
         "mmengine==0.10.7",
         "model-index==0.1.11",
         "modelindex==0.0.2",

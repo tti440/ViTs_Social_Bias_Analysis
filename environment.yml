@@ -1,4 +1,4 @@
-name: open-mmlab
+name: vision_bias
 channels:
   - pytorch
   - conda-forge
@@ -135,7 +135,6 @@ dependencies:
       - mat4py==0.6.0
       - matplotlib==3.7.5
       - mdurl==0.1.2
-      - mmcv==2.2.0
       - mmengine==0.10.7
       - model-index==0.1.11
       - modelindex==0.0.2
