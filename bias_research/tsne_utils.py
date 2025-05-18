@@ -118,13 +118,17 @@ def plot_tsne(
 indice_set = ['Gender-Career','Gender-Science']
 
 def get_plot(models):
+	model_name = list(models.keys())
+	model_name = [name.lower() for name in model_name]
 	for index in indice_set:
 		test_name = index
 		out_dir = test_name.lower()
-		file1 = "embeddings/"+test_dict[test_name][0] +"_"
-		file2 = "embeddings/"+test_dict[test_name][1]+"_"
-		file3 = "embeddings/"+test_dict[test_name][2]+"_"
-		file4 = "embeddings/"+test_dict[test_name][3]+"_"
+		file1 = "backbone_embeddings/"+test_dict[test_name][0] +"_"
+		file2 = "backbone_embeddings/"+test_dict[test_name][1]+"_"
+		file3 = "backbone_embeddings/"+test_dict[test_name][2]+"_"
+		file4 = "backbone_embeddings/"+test_dict[test_name][3]+"_"
+		if not os.path.exists(out_dir):
+			os.makedirs(out_dir)
 		for model in models:
 			df1 = pd.read_csv(file1+model+"_None.csv", index_col=0).drop(columns=["img"])
 			df2 = pd.read_csv(file2+model+"_None.csv",index_col=0).drop(columns=["img"])
@@ -158,10 +162,10 @@ def get_plot(models):
 			plot_tsne(f"{model}(Backbone) — {test_name}", tsne_results, y, class_names, \
 				output_path=f"{out_dir}/{test_name}_{model}_Backbone.png")
 			
-		file1 = "embeddings_logits/"+test_dict[test_name][0] +"_"
-		file2 = "embeddings_logits/"+test_dict[test_name][1]+"_"
-		file3 = "embeddings_logits/"+test_dict[test_name][2]+"_"
-		file4 = "embeddings_logits/"+test_dict[test_name][3]+"_"
+		file1 = "logits_embeddings/"+test_dict[test_name][0] +"_"
+		file2 = "logits_embeddings/"+test_dict[test_name][1]+"_"
+		file3 = "logits_embeddings/"+test_dict[test_name][2]+"_"
+		file4 = "logits_embeddings/"+test_dict[test_name][3]+"_"
 		for model in models:
 			df1 = pd.read_csv(file1+model+"_None.csv", index_col=0).drop(columns=["img"])
 			df2 = pd.read_csv(file2+model+"_None.csv",index_col=0).drop(columns=["img"])
@@ -186,6 +190,7 @@ def get_plot(models):
 			x = normalize_embeddings(x)
 
 			# 3. Reduce dimensionality with PCA
+			print(f"PCA input shape: {x.shape} for model: {model}, test: {test_name}")
 			x = reduce_dimensionality(x, n_components=50)
 			tsne_results = run_tsne(x)
 			plot_tsne(f"{model}(Logits) — {test_name}", tsne_results, y, class_names, \

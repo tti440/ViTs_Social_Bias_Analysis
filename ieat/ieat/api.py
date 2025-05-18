@@ -94,7 +94,6 @@ def test(
 	logger.info("Running test")
 	print([os.path.basename(d) for d in input_dirs])
 	test = Test(*embeddings, names=[os.path.basename(d) for d in input_dirs])
-	print(gpu)
 	return test.run(**test_params)
 
 

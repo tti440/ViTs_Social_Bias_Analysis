@@ -18,7 +18,7 @@ Our pipeline combines:
 - **iEAT (Image Embedding Association Test)** to quantify bias,
 - **Grad-CAM** to visualize attention patterns,
 - **PCA + t-SNE + DBSCAN** to cluster activation weights and highlight structural differences in feature space.
-
+- **Activation Ratio** to observe the distribution of activation on facial area, body area and a whole human shilouette over entire image using SAM2
 ---
 
 ## 📁 Repository Structure
@@ -29,20 +29,16 @@ Our pipeline combines:
 │   ├── experiment.py            # Main script to run all experiments
 │   ├── gradcam_utils.py         # Grad-CAM generation logic
 │   ├── imagenet_label.py        # ImageNet label ID to category map
-│   ├── tsne_utils.py            # t-SNE, PCA, DBSCAN visualization functions
-│   └── ...
+│   ├── tsne_utils.py            # t-SNE, PCA visualization functions
+│   ├── dbscan_utils.py          # DBSCAN clustering functions
+│   └── activation_ratio.py      # Activation Ratio calculation
 ├── ieat/
 │   ├── api.py                   # Runs iEAT testing
 │   ├── models.py                # Model wrappers for embedding extraction
 │   └── ...
 ├── data/
-│   └── experiments/             # Contains input images for gender & intersectional tests
-│       ├── gender/
-│       └── intersectional/
-├── results/                     # Output CSVs, Grad-CAM .pkl files, and t-SNE/DBSCAN plots
-├── .gitignore
-├── README.md
-└── requirements.txt             # Python dependencies
+│   ├── experiments/             # Contains input images from ieat
+│   └── new_exp/                 # Contains resampled images from celebA
 ```
 
 ## 🚀 Running the Pipeline
@@ -108,10 +104,14 @@ This will:
   ```
 - t-SNE & DBSCAN visualizations:
   ```
-  labcoat_DBSCAN.png
-  activation_weights_labcoat.png
+  DBSCAN/labcoat_DBSCAN.png
+  activation_weights/activation_weights_labcoat.png
   ```
-
+Example:
+![Example t-SNE](gender-career/Gender-Career_dino_logits.png)
+![Example Grad-CAM](beit/black-male/beit_labcoat_black-male.jpg)
+![Example Activation Weights](activation_weights/activation_weights_labcoat.png)
+![Example DBSCAN](DBSCAN/labcoat_DBSCAN.png)
 ---
 
 ## 📬 Contact

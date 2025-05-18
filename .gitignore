@@ -4,4 +4,13 @@ logits_embeddings/
 maskfeat/
 milan/
 moco/
+dino/
+vit/
+swin/
+deit/
 mmpretrain/
+test.ipynb
+sam2_repo/
+.gitignore
+.gitattributes
+!beit/black-male/beit_labcoat_black-male.jpg

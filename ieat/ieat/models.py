@@ -14,7 +14,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from mmpretrain import FeatureExtractor, ImageClassificationInferencer
 import logging
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
@@ -23,7 +23,7 @@ logger = logging.getLogger()
 # # Code adapted from
 # https://colab.research.google.com/github/apeguero1/image-gpt/blob/master/Transformers_Image_GPT.ipynb
 # - thanks to the author
-
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class EmbeddingExtractor:
 	"""Extracts embeddings from images with a pre-trained model."""
@@ -191,10 +191,11 @@ class EmbeddingExtractor:
 				self._make_param_path()
 			)
 		else:
-			return "logits_embeddings/{}_{}_{}.csv".format(
+			return "logits_embeddings/{}_{}_{}_{}.csv".format(
 				os.path.basename(os.path.dirname(d)),
 				os.path.basename(d),
-				self.model_name
+				self.model_name,
+				self._make_param_path()
 			)
 
 	def _make_param_path(self):
@@ -219,8 +220,6 @@ class EmbeddingExtractor:
 			ax.imshow(img)
 		plt.show()
 
-from mmpretrain import FeatureExtractor, ImageClassificationInferencer
-
 class ViTExtractor(EmbeddingExtractor):
 	"""Extractor using the [BEIT model](
 	"""
@@ -230,33 +229,38 @@ class ViTExtractor(EmbeddingExtractor):
 		self.model = None
 		self.check = check
 		self.backbone = backbone
-  
 	def load_model(self):
+		
 		if self.backbone == True:
-			self.model = FeatureExtractor(self.check, pretrained=True, backbone=dict(out_indices=(11,)))
+
+			self.model = FeatureExtractor(self.check, pretrained=True, device=DEVICE, backbone=dict(out_indices=(11,)))
 		else:
-			self.model = ImageClassificationInferencer(self.check, pretrained=True)	
+			self.model = ImageClassificationInferencer(self.check, device=DEVICE, pretrained=True)	
 
 	def process_samples(self, image_paths, visualize=False):
 		return image_paths
 
 	def _extract_context(self, samples, gpu, **extract_kwargs) -> np.ndarray:
+		scores = []
 		if self.backbone == True:
 			output = self.model(samples, stage="backbone")
-			scores = []
 			for score in output:
-				if type(score[0]) is not torch.Tensor:
-					scores.append(score[0][0].numpy())
+				
+				if DEVICE == "cpu":
+					while (type(score[0])!= torch.Tensor):
+						score = score[0]
+					output = score[0]
 				else:
-					scores.append(score[0].numpy())
+					while (type(score[0])!= torch.Tensor):
+						score = score[0]
+					output = score[0].cpu()
+				scores.append(output.numpy())
+
 			return np.array(scores)
 		else:
 			output = self.model(samples)
-			scores = [
-						score.get("pred_score").item() if isinstance(score.get("pred_score"), torch.Tensor)
-						else score.get("pred_score")
-						for score in output
-					]
+			for score in output:
+				scores.append(score["pred_scores"])
 			return np.array(scores)
 
 	def _make_param_path(self):
@@ -277,27 +281,34 @@ class SWINExtractor(EmbeddingExtractor):
   
 	def load_model(self):
 		if self.backbone == True:
-			self.model = FeatureExtractor(self.check, pretrained=True, backbone=dict(out_indices=(3,)))
+			self.model = FeatureExtractor(self.check, pretrained=True, device = DEVICE, backbone=dict(out_indices=(3,)))
 		else:
-			self.model = ImageClassificationInferencer(self.check, pretrained=True)	
+			self.model = ImageClassificationInferencer(self.check, pretrained=True, device = DEVICE)	
 
 	def process_samples(self, image_paths, visualize=False):
 		return image_paths
 
 	def _extract_context(self, samples, gpu, **extract_kwargs) -> np.ndarray:
+		scores = []
 		if self.backbone == True:
 			output = self.model(samples, stage="backbone")
-			scores = []
 			for score in output:
-				scores.append(score[0].numpy())
+				
+				if DEVICE == "cpu":
+					output = score[0]
+				else:
+					output = score[0].cpu()
+				pooled = output.mean(dim=[1, 2])  # → shape: (1024,)
+				pooled = pooled.to(self.model.model.backbone.norm3.weight.device)  # Match device
+				pooled = self.model.model.backbone.norm3(pooled)  # LayerNorm
+				scores.append(pooled.detach().cpu().numpy())
+
 			return np.array(scores)
+
 		else:
 			output = self.model(samples)
-			scores = [
-						score.get("pred_score").item() if isinstance(score.get("pred_score"), torch.Tensor)
-						else score.get("pred_score")
-						for score in output
-					]
+			for score in output:
+				scores.append(score["pred_scores"])
 			return np.array(scores)
 
 	def _make_param_path(self):
@@ -320,7 +331,7 @@ class DinoExtractor(EmbeddingExtractor):
 		self.backbone = backbone
   
 	def load_model(self):
-		self.model = torch.hub.load(self.check, self.name)
+		self.model = torch.hub.load(self.check, self.name, pretrained=True)
   
 	def process_samples(self, image_paths, visualize=False):
 		image_size=224

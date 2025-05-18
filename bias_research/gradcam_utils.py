@@ -25,6 +25,7 @@ import numpy as np
 from pytorch_grad_cam import GradCAM, ScoreCAM, GradCAMPlusPlus, AblationCAM, XGradCAM, EigenCAM, EigenGradCAM, LayerCAM, FullGrad
 from pytorch_grad_cam.utils.image import preprocess_image
 from pytorch_grad_cam.ablation_layer import AblationLayerVit
+import torch
 
 # Alias name
 METHOD_MAP = {
@@ -35,6 +36,7 @@ METHOD_MAP.update({
 	for cam_class in cam.base_cam.BaseCAM.__subclasses__()
 })
 
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 def reshape_transform(tensor, model):
 	"""Build reshape_transform for `cam.activations_and_grads`, which is
 	necessary for ViT-like networks."""
@@ -159,11 +161,12 @@ def return_img(model, cfg, img, method, targets, layer=None, beit=False, milan=F
 	if milan:
 		for param in model.backbone.parameters():
 			param.requires_grad = True
-
-	cam = init_cam(method, model, target_layers, 'cpu',
+	data["inputs"] = data["inputs"].to(DEVICE)
+	cam = init_cam(method, model, target_layers, DEVICE,
 				   partial(reshape_transform, model=model))
 
 	# calculate cam grads and show|save the visualization image
+	
 	grayscale_cam = cam(
 		data['inputs'],
 		targets,
@@ -173,7 +176,21 @@ def return_img(model, cfg, img, method, targets, layer=None, beit=False, milan=F
 	visualization_img=show_cam_grad(
 		grayscale_cam, src_img, title=method, out_path="/content/result.jpg")
 
-	return visualization_img, grayscale_cam, cam.activations_and_grads.activations, cam.activations_and_grads.gradients
+
+	if DEVICE == 'cuda':
+		return (
+				visualization_img,
+				grayscale_cam,
+				[act.detach().cpu() for act in cam.activations_and_grads.activations],
+				[grad.detach().cpu() for grad in cam.activations_and_grads.gradients],
+				)
+	else:
+		return (
+				visualization_img,
+				grayscale_cam,
+				[act.detach() for act in cam.activations_and_grads.activations],
+				[grad.detach() for grad in cam.activations_and_grads.gradients],
+				)
 
 def generate_gradcam(model, img_path, method="gradcam", targets=None):
 	"""
@@ -223,15 +240,27 @@ def generate_gradcam(model, img_path, method="gradcam", targets=None):
 		rgb_img, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
 	)
 
-	# Generate the Grad-CAM heatmap
+	# Generate the Grad-CAM heatma	p
+	input_tensor = input_tensor.to(DEVICE)
 	grayscale_cam = cam(input_tensor=input_tensor, targets=targets, eigen_smooth=True, aug_smooth=True)
 	grayscale_cam = grayscale_cam[0]  # Take the first (and only) image in the batch
 
 	# Overlay Grad-CAM on the image
 	cam_image = show_cam_on_image(rgb_img, grayscale_cam)
-
-	return cam_image, grayscale_cam, cam.activations_and_grads.activations, cam.activations_and_grads.gradients
-
+	if DEVICE == 'cuda':
+		return (
+				cam_image,
+				grayscale_cam,
+				[act.detach().cpu() for act in cam.activations_and_grads.activations],
+				[grad.detach().cpu() for grad in cam.activations_and_grads.gradients],
+				)
+	else:
+		return (
+				cam_image,
+				grayscale_cam,
+				[act.detach() for act in cam.activations_and_grads.activations],
+				[grad.detach() for grad in cam.activations_and_grads.gradients],
+				)
 
 def reshape_transform1(tensor):
 	"""
