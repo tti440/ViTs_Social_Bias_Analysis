@@ -1,8 +1,8 @@
 # Social Bias in Vision Transformers
 
 **FAccT 2025 | T. Tsurumi & E. Beretta**  
-*A Comparative Study Across Architectures and Learning Paradigms*
-
+*Social Bias in Vision Transformers: A Comparative Study Across Architectures and Learning Paradigms*
+https://dl.acm.org/doi/full/10.1145/3715275.3732189
 ---
 
 ## Overview
