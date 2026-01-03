@@ -79,7 +79,6 @@ dependencies:
   - tornado=6.4.1
   - traitlets=5.14.3
   - typing_extensions=4.12.2
-  - ucrt=10.0.22621.0
   - wcwidth=0.2.13
   - wheel=0.45.1
   - xorg-libxau=1.0.11
