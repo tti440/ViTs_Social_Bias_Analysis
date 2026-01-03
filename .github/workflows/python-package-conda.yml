@@ -19,7 +19,7 @@ jobs:
           environment-file: environment.yml
           activate-environment: ieat
           auto-activate-base: false
-          python-version: 3.10
+          python-version: 3.8
 
       # Ensure conda-forge priority matches your env file
       - name: Configure Conda
