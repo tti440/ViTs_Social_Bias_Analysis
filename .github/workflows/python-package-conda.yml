@@ -1,0 +1,63 @@
+name: Python Package using Conda
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install Miniconda + create env from environment.yml
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          environment-file: environment.yml
+          activate-environment: ieat
+          auto-activate-base: false
+          python-version: 3.10
+
+      # Ensure conda-forge priority matches your env file
+      - name: Configure Conda
+        shell: bash -l {0}
+        run: |
+          conda config --set channel_priority strict
+
+      # Editable install of your package
+      - name: Install package
+        shell: bash -l {0}
+        run: |
+          pip install -e .
+
+      - name: Lint with flake8
+        shell: bash -l {0}
+        run: |
+          python -m pip install flake8
+          flake8 . \
+            --count \
+            --select=E9,F63,F7,F82 \
+            --show-source \
+            --statistics
+          flake8 . \
+            --count \
+            --exit-zero \
+            --max-complexity=10 \
+            --max-line-length=127 \
+            --statistics
+
+      - name: Test with pytest
+        shell: bash -l {0}
+        run: |
+          python -m pip install pytest
+          pytest -q
+
+      - name: Speed up with mamba
+        shell: bash -l {0}
+        run: |
+          conda install -n base -y mamba
+          mamba env update -n ieat -f environment.yml
+
